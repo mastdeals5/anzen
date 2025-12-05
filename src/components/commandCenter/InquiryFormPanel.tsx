@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FileText, Sparkles, AlertTriangle, CheckCircle2, Calendar, Package, Building2, Mail, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileText, Sparkles, AlertTriangle, CheckCircle2, Calendar, Package, Building2, Mail, ChevronDown, ChevronUp, Layers } from 'lucide-react';
 import type { Email, ParsedEmailData } from '../../types/commandCenter';
 import { CompactInquiryForm } from '../crm/CompactInquiryForm';
 import { EmailBodyViewer } from '../crm/EmailBodyViewer';
@@ -9,6 +9,12 @@ interface InquiryFormPanelProps {
   parsedData: ParsedEmailData | null;
   onSave: (data: InquiryFormData) => Promise<void>;
   saving: boolean;
+}
+
+export interface ProductItem {
+  productName: string;
+  specification: string;
+  quantity: string;
 }
 
 export interface InquiryFormData {
@@ -38,11 +44,16 @@ export interface InquiryFormData {
   offeredPriceCurrency: string;
   deliveryDate: string;
   deliveryTerms: string;
+  isMultiProduct?: boolean;
+  products?: ProductItem[];
 }
 
 export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryFormPanelProps) {
   const [showEmailBody, setShowEmailBody] = useState(false);
   const [initialData, setInitialData] = useState<any>(null);
+  const [showProductsPreview, setShowProductsPreview] = useState(false);
+
+  const isMultiProduct = parsedData?.products && parsedData.products.length > 1;
 
   useEffect(() => {
     if (parsedData) {
@@ -71,9 +82,15 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
         delivery_terms: '',
         inquiry_source: 'email',
         mail_subject: email?.subject || '',
+        is_multi_product: isMultiProduct,
+        products: parsedData.products || [],
       });
+
+      if (isMultiProduct) {
+        setShowProductsPreview(true);
+      }
     }
-  }, [parsedData, email]);
+  }, [parsedData, email, isMultiProduct]);
 
   const handleFormSubmit = async (formData: any) => {
     const convertedData: InquiryFormData = {
@@ -103,6 +120,8 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
       offeredPriceCurrency: formData.offered_price_currency || 'USD',
       deliveryDate: formData.delivery_date || '',
       deliveryTerms: formData.delivery_terms || '',
+      isMultiProduct: formData.is_multi_product || false,
+      products: formData.products || [],
     };
 
     await onSave(convertedData);
@@ -229,6 +248,71 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
               </div>
             </div>
           </div>
+
+          {isMultiProduct && parsedData?.products && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Layers className="w-5 h-5 text-blue-600" />
+                  <h3 className="text-sm font-semibold text-blue-900">
+                    Multi-Product Inquiry Detected ({parsedData.products.length} Products)
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowProductsPreview(!showProductsPreview)}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1"
+                >
+                  {showProductsPreview ? (
+                    <>
+                      <ChevronUp className="w-4 h-4" />
+                      Hide Products
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4" />
+                      Show Products
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <p className="text-xs text-blue-700 mb-3">
+                This will create a parent inquiry and {parsedData.products.length} child inquiries with numbers like INQ-2025-001.1, INQ-2025-001.2, etc.
+              </p>
+
+              {showProductsPreview && (
+                <div className="bg-white rounded-lg border border-blue-200 overflow-hidden">
+                  <table className="min-w-full divide-y divide-blue-100">
+                    <thead className="bg-blue-100">
+                      <tr>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">#</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Product Name</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Specification</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Quantity</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-blue-100">
+                      {parsedData.products.map((product: any, index: number) => (
+                        <tr key={index} className="hover:bg-blue-50">
+                          <td className="px-3 py-2 text-xs text-gray-700">{index + 1}</td>
+                          <td className="px-3 py-2 text-xs font-medium text-gray-900">
+                            {product.productName || product.product_name}
+                          </td>
+                          <td className="px-3 py-2 text-xs text-gray-700">
+                            {product.specification || product.spec || '-'}
+                          </td>
+                          <td className="px-3 py-2 text-xs text-gray-700">
+                            {product.quantity || '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
 
           {initialData && (
             <CompactInquiryForm

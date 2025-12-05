@@ -189,11 +189,33 @@ export function CRMCommandCenter() {
 
       const { data: inquiry, error: inquiryError } = await supabase
         .from('crm_inquiries')
-        .insert([inquiryData])
+        .insert([{
+          ...inquiryData,
+          is_multi_product: formData.isMultiProduct || false,
+          has_items: formData.isMultiProduct || false,
+        }])
         .select()
         .single();
 
       if (inquiryError) throw inquiryError;
+
+      // Create inquiry items if multi-product
+      if (formData.isMultiProduct && formData.products && formData.products.length > 1) {
+        const baseInquiryNumber = inquiry.inquiry_number;
+        const inquiryItems = formData.products.map((product, index) => ({
+          parent_inquiry_id: inquiry.id,
+          inquiry_number: `${baseInquiryNumber}.${index + 1}`,
+          product_name: product.productName,
+          specification: product.specification || null,
+          quantity: product.quantity,
+          status: 'open',
+          pipeline_stage: 'new',
+          document_sent: false,
+          notes: null,
+        }));
+
+        await supabase.from('crm_inquiry_items').insert(inquiryItems);
+      }
 
       await supabase
         .from('crm_email_inbox')
@@ -270,7 +292,11 @@ export function CRMCommandCenter() {
       setCreatedInquiry(inquiry);
       setParsedData(null);
 
-      alert(`Inquiry #${inquiry.inquiry_number} created successfully!\n\nUse Quick Actions to send documents.`);
+      const successMsg = formData.isMultiProduct && formData.products
+        ? `Inquiry #${inquiry.inquiry_number} created successfully with ${formData.products.length} product line items!\n\nUse Quick Actions to send documents for each product.`
+        : `Inquiry #${inquiry.inquiry_number} created successfully!\n\nUse Quick Actions to send documents.`;
+
+      alert(successMsg);
     } catch (error: any) {
       console.error('Error creating inquiry:', error);
       if (error.message?.includes('duplicate key')) {
