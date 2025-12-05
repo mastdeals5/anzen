@@ -187,51 +187,58 @@ export function CRMCommandCenter() {
         source_email_id: selectedEmail.id,
       };
 
-      const { data: inquiry, error: inquiryError } = await supabase
-        .from('crm_inquiries')
-        .insert([{
-          ...inquiryData,
-          is_multi_product: formData.isMultiProduct || false,
-          has_items: formData.isMultiProduct || false,
-        }])
-        .select()
-        .single();
+      // If multi-product, create N separate inquiries in crm_inquiries with .1, .2, .3 suffixes
+      // All common fields are copied to each inquiry
+      let inquiry: any;
 
-      if (inquiryError) throw inquiryError;
-
-      // Create inquiry items if multi-product
-      // IMPORTANT: Create items even if single product to support future quantity variations
       if (formData.isMultiProduct && formData.products && formData.products.length > 0) {
-        const baseInquiryNumber = inquiry.inquiry_number;
-        const inquiryItems = formData.products.map((product, index) => ({
-          parent_inquiry_id: inquiry.id,
-          inquiry_number: `${baseInquiryNumber}.${index + 1}`,
+        const inquiriesToInsert = formData.products.map((product) => ({
+          ...inquiryData,
           product_name: product.productName,
           specification: product.specification || null,
           quantity: product.quantity,
-          make: product.make || null,
-          supplier_name: product.supplierName || null,
-          supplier_country: product.supplierCountry || null,
-          delivery_date: product.deliveryDate || null,
-          delivery_terms: product.deliveryTerms || null,
-          aceerp_no: null,
-          purchase_price: null,
-          purchase_price_currency: 'USD',
-          offered_price: null,
-          offered_price_currency: 'USD',
-          our_side_status: [],
-          price_sent_at: null,
-          coa_sent_at: null,
-          sample_sent_at: null,
-          agency_letter_sent_at: null,
-          status: 'open',
-          pipeline_stage: 'new',
-          document_sent: false,
-          remarks: null,
-          notes: null,
+          supplier_name: product.supplierName || inquiryData.supplier_name || null,
+          supplier_country: product.supplierCountry || inquiryData.supplier_country || null,
+          delivery_date: product.deliveryDate || inquiryData.delivery_date || null,
+          delivery_terms: product.deliveryTerms || inquiryData.delivery_terms || null,
+          is_multi_product: false,
+          has_items: false,
         }));
 
-        await supabase.from('crm_inquiry_items').insert(inquiryItems);
+        const { data: inquiries, error: inquiryError } = await supabase
+          .from('crm_inquiries')
+          .insert(inquiriesToInsert)
+          .select();
+
+        if (inquiryError) throw inquiryError;
+
+        // Update inquiry numbers to add .1, .2, .3 suffixes
+        if (inquiries && inquiries.length > 0) {
+          const baseInquiryNumber = inquiries[0].inquiry_number;
+
+          for (let i = 0; i < inquiries.length; i++) {
+            await supabase
+              .from('crm_inquiries')
+              .update({ inquiry_number: `${baseInquiryNumber}.${i + 1}` })
+              .eq('id', inquiries[i].id);
+          }
+
+          inquiry = inquiries[0];
+        }
+      } else {
+        // Single product inquiry
+        const { data: singleInquiry, error: inquiryError } = await supabase
+          .from('crm_inquiries')
+          .insert([{
+            ...inquiryData,
+            is_multi_product: false,
+            has_items: false,
+          }])
+          .select()
+          .single();
+
+        if (inquiryError) throw inquiryError;
+        inquiry = singleInquiry;
       }
 
       await supabase

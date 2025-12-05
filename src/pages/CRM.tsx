@@ -127,62 +127,65 @@ export function CRM() {
         // Extract products and is_multi_product from formData before insert
         const { products, is_multi_product, ...restFormData } = formData;
 
-        const insertData: any = {
-          ...restFormData,
-          specification: formData.specification || null,
-          inquiry_date: new Date().toISOString().split('T')[0],
-          assigned_to: user.id,
-          created_by: user.id,
-          purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
-          offered_price: formData.offered_price ? parseFloat(formData.offered_price) : null,
-          is_multi_product: is_multi_product || false,
-          has_items: is_multi_product || false,
-        };
-
-        const { data: inquiry, error } = await supabase
-          .from('crm_inquiries')
-          .insert([insertData])
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        // Create inquiry items if multi-product
-        if (is_multi_product && products && products.length > 0 && inquiry) {
-          const baseInquiryNumber = inquiry.inquiry_number;
-          const inquiryItems = products.map((product: any, index: number) => ({
-            parent_inquiry_id: inquiry.id,
-            inquiry_number: `${baseInquiryNumber}.${index + 1}`,
+        // If multi-product, create N separate inquiries in crm_inquiries with .1, .2, .3 suffixes
+        // All common fields are copied to each inquiry
+        if (is_multi_product && products && products.length > 0) {
+          // Create inquiries for each product
+          const inquiriesToInsert = products.map((product: any) => ({
+            ...restFormData,
             product_name: product.productName || product.product_name,
             specification: product.specification || null,
             quantity: product.quantity,
-            make: product.make || null,
-            supplier_name: product.supplierName || product.supplier_name || null,
-            supplier_country: product.supplierCountry || product.supplier_country || null,
-            delivery_date: product.deliveryDate || product.delivery_date || null,
-            delivery_terms: product.deliveryTerms || product.delivery_terms || null,
-            aceerp_no: null,
+            supplier_name: product.supplierName || restFormData.supplier_name || null,
+            supplier_country: product.supplierCountry || restFormData.supplier_country || null,
+            delivery_date: product.deliveryDate || null,
+            delivery_terms: product.deliveryTerms || null,
+            inquiry_date: new Date().toISOString().split('T')[0],
+            assigned_to: user.id,
+            created_by: user.id,
             purchase_price: null,
-            purchase_price_currency: 'USD',
             offered_price: null,
-            offered_price_currency: 'USD',
-            our_side_status: [],
-            price_sent_at: null,
-            coa_sent_at: null,
-            sample_sent_at: null,
-            agency_letter_sent_at: null,
-            status: 'open',
-            pipeline_stage: 'new',
-            document_sent: false,
-            remarks: null,
-            notes: null,
+            is_multi_product: false,
+            has_items: false,
           }));
 
-          const { error: itemsError } = await supabase
-            .from('crm_inquiry_items')
-            .insert(inquiryItems);
+          const { data: insertedInquiries, error } = await supabase
+            .from('crm_inquiries')
+            .insert(inquiriesToInsert)
+            .select();
 
-          if (itemsError) throw itemsError;
+          if (error) throw error;
+
+          // Update inquiry numbers to add .1, .2, .3 suffixes
+          if (insertedInquiries && insertedInquiries.length > 0) {
+            const baseInquiryNumber = insertedInquiries[0].inquiry_number;
+
+            for (let i = 0; i < insertedInquiries.length; i++) {
+              await supabase
+                .from('crm_inquiries')
+                .update({ inquiry_number: `${baseInquiryNumber}.${i + 1}` })
+                .eq('id', insertedInquiries[i].id);
+            }
+          }
+        } else {
+          // Single product inquiry
+          const insertData: any = {
+            ...restFormData,
+            specification: formData.specification || null,
+            inquiry_date: new Date().toISOString().split('T')[0],
+            assigned_to: user.id,
+            created_by: user.id,
+            purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
+            offered_price: formData.offered_price ? parseFloat(formData.offered_price) : null,
+            is_multi_product: false,
+            has_items: false,
+          };
+
+          const { error } = await supabase
+            .from('crm_inquiries')
+            .insert([insertData]);
+
+          if (error) throw error;
         }
       }
 
