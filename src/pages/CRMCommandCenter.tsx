@@ -76,6 +76,7 @@ export function CRMCommandCenter() {
   const [saving, setSaving] = useState(false);
 
   const handleEmailSelect = (email: Email, data: ParsedEmailData | null) => {
+    console.log('[CRMCommandCenter] handleEmailSelect called', { email, data });
     setSelectedEmail(email);
     setParsedData(data);
     setCreatedInquiry(null);

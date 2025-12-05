@@ -56,6 +56,7 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
   const isMultiProduct = parsedData?.products && parsedData.products.length > 1;
 
   useEffect(() => {
+    console.log('[InquiryFormPanel] useEffect triggered', { email, parsedData });
     if (parsedData) {
       // Extract contact person and email properly (handle arrays/objects)
       let contactPerson = parsedData.contactPerson || '';
@@ -97,7 +98,7 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
         contactPerson = contactPerson.replace(/<[^>]*>/g, '').trim();
       }
 
-      setInitialData({
+      const formData = {
         product_name: parsedData.productName || '',
         specification: parsedData.specification || '',
         quantity: parsedData.quantity || '',
@@ -124,7 +125,9 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
         mail_subject: email?.subject || '',
         is_multi_product: isMultiProduct,
         products: parsedData.products || [],
-      });
+      };
+      console.log('[InquiryFormPanel] Setting initialData:', formData);
+      setInitialData(formData);
 
       if (isMultiProduct) {
         setShowProductsPreview(true);
