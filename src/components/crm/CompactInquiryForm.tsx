@@ -198,9 +198,73 @@ export function CompactInquiryForm({ onSubmit, onCancel, initialData, isEditing 
     }
   };
 
+  const addProduct = () => {
+    setFormData({
+      ...formData,
+      products: [
+        ...formData.products,
+        {
+          productName: '',
+          specification: '',
+          quantity: '',
+          make: '',
+          supplierName: '',
+          supplierCountry: '',
+          deliveryDate: '',
+          deliveryTerms: ''
+        }
+      ]
+    });
+  };
+
+  const removeProduct = (index: number) => {
+    setFormData({
+      ...formData,
+      products: formData.products.filter((_, i) => i !== index)
+    });
+  };
+
+  const updateProduct = (index: number, field: string, value: string) => {
+    const updatedProducts = [...formData.products];
+    updatedProducts[index] = { ...updatedProducts[index], [field]: value };
+    setFormData({ ...formData, products: updatedProducts });
+  };
+
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-3">
+        {/* Multi-Product Toggle */}
+        <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <input
+            type="checkbox"
+            id="multiProductToggle"
+            checked={formData.is_multi_product}
+            onChange={(e) => {
+              const isMulti = e.target.checked;
+              setFormData({
+                ...formData,
+                is_multi_product: isMulti,
+                products: isMulti && formData.products.length === 0
+                  ? [{
+                      productName: '',
+                      specification: '',
+                      quantity: '',
+                      make: '',
+                      supplierName: '',
+                      supplierCountry: '',
+                      deliveryDate: '',
+                      deliveryTerms: ''
+                    }]
+                  : formData.products
+              });
+            }}
+            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <label htmlFor="multiProductToggle" className="text-sm font-medium text-gray-700 cursor-pointer">
+            Multi-Product Inquiry (Add multiple products with same customer/supplier info)
+          </label>
+        </div>
+
         {/* Hide product fields for multi-product inquiries */}
         {!formData.is_multi_product && (
           <>
@@ -286,40 +350,182 @@ export function CompactInquiryForm({ onSubmit, onCancel, initialData, isEditing 
 
         {/* Show Priority and Inquiry Source for multi-product */}
         {formData.is_multi_product && (
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Priority <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
-              </select>
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Priority <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.priority}
+                  onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                  className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Inquiry Source
+                </label>
+                <select
+                  value={formData.inquiry_source}
+                  onChange={(e) => setFormData({ ...formData, inquiry_source: e.target.value })}
+                  className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="email">Email</option>
+                  <option value="phone">Phone</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="website">Website</option>
+                  <option value="referral">Referral</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Inquiry Source
-              </label>
-              <select
-                value={formData.inquiry_source}
-                onChange={(e) => setFormData({ ...formData, inquiry_source: e.target.value })}
-                className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="email">Email</option>
-                <option value="phone">Phone</option>
-                <option value="whatsapp">WhatsApp</option>
-                <option value="website">Website</option>
-                <option value="referral">Referral</option>
-                <option value="other">Other</option>
-              </select>
+
+            {/* Multi-Product List */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-gray-700">
+                  Products <span className="text-red-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={addProduct}
+                  className="flex items-center gap-1 px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Product
+                </button>
+              </div>
+
+              {formData.products.map((product: any, index: number) => (
+                <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-gray-600">Product #{index + 1}</span>
+                    {formData.products.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeProduct(index)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Product Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={product.productName || ''}
+                        onChange={(e) => updateProduct(index, 'productName', e.target.value)}
+                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                        placeholder="Product name"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Specification
+                      </label>
+                      <input
+                        type="text"
+                        value={product.specification || ''}
+                        onChange={(e) => updateProduct(index, 'specification', e.target.value)}
+                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                        placeholder="BP/USP/EP"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Quantity <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={product.quantity || ''}
+                        onChange={(e) => updateProduct(index, 'quantity', e.target.value)}
+                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                        placeholder="500 KG"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Make
+                      </label>
+                      <input
+                        type="text"
+                        value={product.make || ''}
+                        onChange={(e) => updateProduct(index, 'make', e.target.value)}
+                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                        placeholder="Brand/Make"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Delivery Date
+                      </label>
+                      <input
+                        type="date"
+                        value={product.deliveryDate || ''}
+                        onChange={(e) => updateProduct(index, 'deliveryDate', e.target.value)}
+                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Supplier Name
+                      </label>
+                      <input
+                        type="text"
+                        value={product.supplierName || ''}
+                        onChange={(e) => updateProduct(index, 'supplierName', e.target.value)}
+                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                        placeholder="Supplier"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Country
+                      </label>
+                      <input
+                        type="text"
+                        value={product.supplierCountry || ''}
+                        onChange={(e) => updateProduct(index, 'supplierCountry', e.target.value)}
+                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                        placeholder="Country"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Delivery Terms
+                      </label>
+                      <input
+                        type="text"
+                        value={product.deliveryTerms || ''}
+                        onChange={(e) => updateProduct(index, 'deliveryTerms', e.target.value)}
+                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                        placeholder="FOB/CIF"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+          </>
         )}
 
         {/* Row: Supplier Name | Country of Origin | Customer Dropdown */}
