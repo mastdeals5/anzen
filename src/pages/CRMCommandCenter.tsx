@@ -94,7 +94,7 @@ export function CRMCommandCenter() {
       // Check if customer exists by email or company name
       let customerId = null;
       const { data: existingCustomers } = await supabase
-        .from('customers')
+        .from('crm_contacts')
         .select('id, company_name, email, contact_person, phone, address')
         .or(`email.eq.${formData.contactEmail},company_name.ilike.${formData.companyName}`)
         .limit(1)
@@ -117,16 +117,15 @@ export function CRMCommandCenter() {
 
         if (Object.keys(updates).length > 0) {
           await supabase
-            .from('customers')
+            .from('crm_contacts')
             .update({ ...updates, updated_at: new Date().toISOString() })
             .eq('id', customerId);
         }
       } else {
         // Create new customer
         const { data: newCustomer, error: customerError } = await supabase
-          .from('customers')
+          .from('crm_contacts')
           .insert({
-            customer_name: formData.companyName,
             company_name: formData.companyName,
             contact_person: formData.contactPerson || null,
             email: formData.contactEmail,

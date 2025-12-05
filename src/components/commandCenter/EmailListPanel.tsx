@@ -109,6 +109,7 @@ export function EmailListPanel({ onEmailSelect, selectedEmailId }: EmailListPane
       if (pendingEmail) {
         console.log('[EmailListPanel] Found pending email in sessionStorage');
         sessionStorage.removeItem('pendingEmailForInquiry');
+        document.body.style.cursor = 'wait';
 
         try {
           const emailData = JSON.parse(pendingEmail);
@@ -203,6 +204,8 @@ export function EmailListPanel({ onEmailSelect, selectedEmailId }: EmailListPane
         } catch (error) {
           console.error('[EmailListPanel] Error processing pending email:', error);
           alert(`Failed to process email: ${error instanceof Error ? error.message : String(error)}`);
+        } finally {
+          document.body.style.cursor = 'default';
         }
       } else {
         console.log('[EmailListPanel] No pending email found in sessionStorage');
@@ -214,6 +217,7 @@ export function EmailListPanel({ onEmailSelect, selectedEmailId }: EmailListPane
 
   const handleEmailClick = async (email: Email) => {
     setParsingEmailId(email.id);
+    document.body.style.cursor = 'wait';
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -252,6 +256,7 @@ export function EmailListPanel({ onEmailSelect, selectedEmailId }: EmailListPane
       alert('Failed to parse email. Please try again.');
     } finally {
       setParsingEmailId(null);
+      document.body.style.cursor = 'default';
     }
   };
 

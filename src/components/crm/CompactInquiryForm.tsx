@@ -261,14 +261,13 @@ export function CompactInquiryForm({ onSubmit, onCancel, initialData, isEditing 
             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
           <label htmlFor="multiProductToggle" className="text-sm font-medium text-gray-700 cursor-pointer">
-            Multi-Product Inquiry (Add multiple products with same customer/supplier info)
+            Multi-Product Inquiry (Common data will be applied to all products)
           </label>
         </div>
 
-        {/* Hide product fields for multi-product inquiries */}
+        {/* Row: Product Name | Specification */}
         {!formData.is_multi_product && (
           <>
-            {/* Row: Product Name | Specification */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -770,9 +769,8 @@ export function CompactInquiryForm({ onSubmit, onCancel, initialData, isEditing 
           </div>
         </div>
 
-        {/* Hide delivery fields for multi-product inquiries */}
-        {!formData.is_multi_product && (
-          <div className="grid grid-cols-2 gap-3">
+        {/* Delivery Date and Terms (always shown) */}
+        <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Delivery Date
@@ -807,8 +805,7 @@ export function CompactInquiryForm({ onSubmit, onCancel, initialData, isEditing 
                 <option value="FCA">FCA</option>
               </select>
             </div>
-          </div>
-        )}
+        </div>
 
         {/* Row: ACE ERP No | Pipeline Status */}
         <div className="grid grid-cols-2 gap-3">
