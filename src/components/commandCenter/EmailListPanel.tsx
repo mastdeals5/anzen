@@ -120,8 +120,35 @@ export function EmailListPanel({ onEmailSelect, selectedEmailId }: EmailListPane
             throw new Error('Not authenticated');
           }
 
+          // Check if this email was already processed
+          const { data: existingInquiry } = await supabase
+            .from('inquiries')
+            .select('id, inquiry_number, product_name')
+            .eq('mail_subject', emailData.subject)
+            .maybeSingle();
+
+          if (existingInquiry) {
+            const shouldReprocess = confirm(
+              `This email has already been processed as Inquiry #${existingInquiry.inquiry_number} (${existingInquiry.product_name}).\n\nDo you want to reprocess it?`
+            );
+
+            if (!shouldReprocess) {
+              console.log('[EmailListPanel] User declined to reprocess existing inquiry');
+              return;
+            }
+            console.log('[EmailListPanel] User confirmed reprocessing existing inquiry');
+          }
+
           console.log('[EmailListPanel] Calling parse-pharma-email edge function');
           const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/parse-pharma-email`;
+
+          console.log('[EmailListPanel] API URL:', apiUrl);
+          console.log('[EmailListPanel] Request body:', {
+            emailSubject: emailData.subject,
+            emailBody: emailData.body.substring(0, 100) + '...',
+            fromEmail: emailData.fromEmail,
+            fromName: emailData.fromName,
+          });
 
           const response = await fetch(apiUrl, {
             method: 'POST',
@@ -138,6 +165,13 @@ export function EmailListPanel({ onEmailSelect, selectedEmailId }: EmailListPane
           });
 
           console.log('[EmailListPanel] Response status:', response.status);
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[EmailListPanel] Response error:', errorText);
+            throw new Error(`Edge function returned ${response.status}: ${errorText}`);
+          }
+
           const result = await response.json();
           console.log('[EmailListPanel] Parse result:', result);
 
