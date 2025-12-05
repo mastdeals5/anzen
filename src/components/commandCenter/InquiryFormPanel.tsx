@@ -57,6 +57,22 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
 
   useEffect(() => {
     if (parsedData) {
+      // Extract contact person and email properly (handle arrays/objects)
+      let contactPerson = parsedData.contactPerson || '';
+      let contactEmail = parsedData.contactEmail || '';
+
+      if (typeof contactPerson === 'object' && !Array.isArray(contactPerson)) {
+        contactPerson = contactPerson.name || '';
+      } else if (Array.isArray(contactPerson)) {
+        contactPerson = contactPerson[0]?.name || contactPerson[0] || '';
+      }
+
+      if (typeof contactEmail === 'object' && !Array.isArray(contactEmail)) {
+        contactEmail = contactEmail.email || '';
+      } else if (Array.isArray(contactEmail)) {
+        contactEmail = contactEmail[0]?.email || contactEmail[0] || '';
+      }
+
       setInitialData({
         product_name: parsedData.productName || '',
         specification: parsedData.specification || '',
@@ -64,15 +80,15 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
         supplier_name: parsedData.supplierName || '',
         supplier_country: parsedData.supplierCountry || '',
         company_name: parsedData.companyName || '',
-        contact_person: parsedData.contactPerson || '',
-        contact_email: parsedData.contactEmail || '',
+        contact_person: contactPerson,
+        contact_email: contactEmail,
         contact_phone: parsedData.contactPhone || '',
         priority: parsedData.urgency || 'medium',
         delivery_date: parsedData.deliveryDateExpected || '',
         remarks: parsedData.remarks || '',
-        coa_required: parsedData.coaRequested || false,
+        coa_required: isMultiProduct ? true : (parsedData.coaRequested || false),
         sample_required: parsedData.sampleRequested || false,
-        price_required: parsedData.priceRequested || true,
+        price_required: isMultiProduct ? true : (parsedData.priceRequested || true),
         agency_letter_required: parsedData.agencyLetterRequested || false,
         aceerp_no: '',
         purchase_price: '',
@@ -282,7 +298,7 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
               </p>
 
               {showProductsPreview && (
-                <div className="bg-white rounded-lg border border-blue-200 overflow-hidden">
+                <div className="bg-white rounded-lg border border-blue-200 overflow-hidden overflow-x-auto">
                   <table className="min-w-full divide-y divide-blue-100">
                     <thead className="bg-blue-100">
                       <tr>
@@ -290,6 +306,9 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
                         <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Product Name</th>
                         <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Specification</th>
                         <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Quantity</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Supplier / Origin</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Delivery Date</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Delivery Terms</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-blue-100">
@@ -304,6 +323,16 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
                           </td>
                           <td className="px-3 py-2 text-xs text-gray-700">
                             {product.quantity || '-'}
+                          </td>
+                          <td className="px-3 py-2 text-xs text-gray-700">
+                            {parsedData.supplierName || '-'}
+                            {parsedData.supplierCountry && ` (${parsedData.supplierCountry})`}
+                          </td>
+                          <td className="px-3 py-2 text-xs text-gray-700">
+                            {parsedData.deliveryDateExpected || '-'}
+                          </td>
+                          <td className="px-3 py-2 text-xs text-gray-700">
+                            -
                           </td>
                         </tr>
                       ))}

@@ -58,6 +58,8 @@ export function CompactInquiryForm({ onSubmit, onCancel, initialData, isEditing 
     pipeline_status: initialData?.pipeline_status || 'new',
     remarks: initialData?.remarks || '',
     internal_notes: initialData?.internal_notes || '',
+    is_multi_product: initialData?.is_multi_product || false,
+    products: initialData?.products || [],
   });
 
   const [newCustomer, setNewCustomer] = useState({
@@ -175,9 +177,17 @@ export function CompactInquiryForm({ onSubmit, onCancel, initialData, isEditing 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.product_name || !formData.quantity || !formData.company_name) {
-      alert('Please fill in all required fields: Product Name, Quantity, and Customer');
-      return;
+    // Skip product validation for multi-product inquiries
+    if (!formData.is_multi_product) {
+      if (!formData.product_name || !formData.quantity || !formData.company_name) {
+        alert('Please fill in all required fields: Product Name, Quantity, and Customer');
+        return;
+      }
+    } else {
+      if (!formData.company_name) {
+        alert('Please fill in Customer');
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -191,83 +201,126 @@ export function CompactInquiryForm({ onSubmit, onCancel, initialData, isEditing 
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-3">
-        {/* Row: Product Name | Specification */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Product Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.product_name}
-              onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
-              className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter product name"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Specification
-            </label>
-            <input
-              type="text"
-              value={formData.specification}
-              onChange={(e) => setFormData({ ...formData, specification: e.target.value })}
-              className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="BP / USP / EP"
-            />
-          </div>
-        </div>
+        {/* Hide product fields for multi-product inquiries */}
+        {!formData.is_multi_product && (
+          <>
+            {/* Row: Product Name | Specification */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Product Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.product_name}
+                  onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
+                  className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter product name"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Specification
+                </label>
+                <input
+                  type="text"
+                  value={formData.specification}
+                  onChange={(e) => setFormData({ ...formData, specification: e.target.value })}
+                  className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="BP / USP / EP"
+                />
+              </div>
+            </div>
 
-        {/* Row: Quantity | Priority | Inquiry Source */}
-        <div className="grid grid-cols-3 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Quantity <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.quantity}
-              onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-              className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g., 500 KG"
-              required
-            />
+            {/* Row: Quantity | Priority | Inquiry Source */}
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Quantity <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.quantity}
+                  onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                  className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., 500 KG"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Priority <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.priority}
+                  onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                  className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Inquiry Source
+                </label>
+                <select
+                  value={formData.inquiry_source}
+                  onChange={(e) => setFormData({ ...formData, inquiry_source: e.target.value })}
+                  className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="email">Email</option>
+                  <option value="phone">Phone</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="website">Website</option>
+                  <option value="referral">Referral</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Show Priority and Inquiry Source for multi-product */}
+        {formData.is_multi_product && (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Priority <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.priority}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Inquiry Source
+              </label>
+              <select
+                value={formData.inquiry_source}
+                onChange={(e) => setFormData({ ...formData, inquiry_source: e.target.value })}
+                className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="email">Email</option>
+                <option value="phone">Phone</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="website">Website</option>
+                <option value="referral">Referral</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Priority <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={formData.priority}
-              onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-              className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Inquiry Source
-            </label>
-            <select
-              value={formData.inquiry_source}
-              onChange={(e) => setFormData({ ...formData, inquiry_source: e.target.value })}
-              className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="email">Email</option>
-              <option value="phone">Phone</option>
-              <option value="whatsapp">WhatsApp</option>
-              <option value="website">Website</option>
-              <option value="referral">Referral</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-        </div>
+        )}
 
         {/* Row: Supplier Name | Country of Origin | Customer Dropdown */}
         <div className="grid grid-cols-3 gap-3">
@@ -510,43 +563,45 @@ export function CompactInquiryForm({ onSubmit, onCancel, initialData, isEditing 
           </div>
         </div>
 
-        {/* Row: Delivery Date | Delivery Terms */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Delivery Date
-            </label>
-            <input
-              type="date"
-              value={formData.delivery_date}
-              onChange={(e) => setFormData({ ...formData, delivery_date: e.target.value })}
-              className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            />
+        {/* Hide delivery fields for multi-product inquiries */}
+        {!formData.is_multi_product && (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Delivery Date
+              </label>
+              <input
+                type="date"
+                value={formData.delivery_date}
+                onChange={(e) => setFormData({ ...formData, delivery_date: e.target.value })}
+                className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Delivery Terms
+              </label>
+              <select
+                value={formData.delivery_terms}
+                onChange={(e) => setFormData({ ...formData, delivery_terms: e.target.value })}
+                className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select...</option>
+                <option value="FOB Jakarta">FOB Jakarta</option>
+                <option value="CIF Jakarta">CIF Jakarta</option>
+                <option value="FOB Surabaya">FOB Surabaya</option>
+                <option value="CIF Surabaya">CIF Surabaya</option>
+                <option value="FOB Semarang">FOB Semarang</option>
+                <option value="CIF Semarang">CIF Semarang</option>
+                <option value="EXW">EXW</option>
+                <option value="DDP">DDP</option>
+                <option value="DAP">DAP</option>
+                <option value="CFR">CFR</option>
+                <option value="FCA">FCA</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Delivery Terms
-            </label>
-            <select
-              value={formData.delivery_terms}
-              onChange={(e) => setFormData({ ...formData, delivery_terms: e.target.value })}
-              className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select...</option>
-              <option value="FOB Jakarta">FOB Jakarta</option>
-              <option value="CIF Jakarta">CIF Jakarta</option>
-              <option value="FOB Surabaya">FOB Surabaya</option>
-              <option value="CIF Surabaya">CIF Surabaya</option>
-              <option value="FOB Semarang">FOB Semarang</option>
-              <option value="CIF Semarang">CIF Semarang</option>
-              <option value="EXW">EXW</option>
-              <option value="DDP">DDP</option>
-              <option value="DAP">DAP</option>
-              <option value="CFR">CFR</option>
-              <option value="FCA">FCA</option>
-            </select>
-          </div>
-        </div>
+        )}
 
         {/* Row: ACE ERP No | Pipeline Status */}
         <div className="grid grid-cols-2 gap-3">
