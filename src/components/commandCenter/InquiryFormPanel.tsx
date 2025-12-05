@@ -73,6 +73,22 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
         contactEmail = contactEmail[0]?.email || contactEmail[0] || '';
       }
 
+      // Strip HTML tags if present
+      if (typeof contactEmail === 'string') {
+        // Remove HTML tags
+        contactEmail = contactEmail.replace(/<[^>]*>/g, '');
+        // Extract email from text if it contains email-like pattern
+        const emailMatch = contactEmail.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+        if (emailMatch) {
+          contactEmail = emailMatch[1];
+        }
+      }
+
+      if (typeof contactPerson === 'string') {
+        // Remove HTML tags from contact person
+        contactPerson = contactPerson.replace(/<[^>]*>/g, '').trim();
+      }
+
       setInitialData({
         product_name: parsedData.productName || '',
         specification: parsedData.specification || '',

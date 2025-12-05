@@ -292,7 +292,7 @@ IMPORTANT: All dates must be in YYYY-MM-DD format.`;
 
 SUBJECT: ${emailSubject}
 FROM: ${actualFromName || ''} <${actualFromEmail}>
-${isForwarded ? `\nNOTE: This email was FORWARDED from internal team. Extract the ORIGINAL sender's details from the forwarded email body.` : ''}
+${isForwarded ? `\nNOTE: This email was FORWARDED from internal team. Extract the ORIGINAL sender's details from the forwarded email body (look for "From:", "Date:", lines).` : ''}
 ${companyFromDomain ? `\nKNOWN COMPANY (from domain): ${companyFromDomain}` : ''}
 ${receivedDate ? `\nRECEIVED DATE: ${receivedDate}` : ''}
 ${allEmailAddresses.length > 1 ? `\nALL EMAIL ADDRESSES FOUND: ${allEmailAddresses.join(', ')}` : ''}
@@ -300,8 +300,14 @@ ${allEmailAddresses.length > 1 ? `\nALL EMAIL ADDRESSES FOUND: ${allEmailAddress
 BODY:
 ${emailBody}
 
+**CRITICAL EXTRACTION INSTRUCTIONS:**
+1. IGNORE ALL HTML TAGS - Extract only actual text content
+2. For contact email: Look for email format like "name@company.com" in the forwarded "From:" line
+3. For contact person: Extract actual name from "From:" line, NOT HTML tags
+4. If you see HTML like "strong class=..." - IGNORE IT and find the actual email/name nearby
+5. Example: If you see "From: purchasing <purchasing@trifa.co.id>" → contactPerson: "purchasing", contactEmail: "purchasing@trifa.co.id"
+
 EXTRACT ALL PRODUCTS. If email contains a table with multiple products, extract each row as a separate product in the products array.
-${allEmailAddresses.length > 1 ? `\nIMPORTANT: Multiple email addresses found. Extract ALL contact persons from the email. Return an array of contacts with their names and email addresses.` : ''}
 
 Respond with a JSON object containing the extracted information.`;
 
