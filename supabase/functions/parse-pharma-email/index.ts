@@ -19,6 +19,7 @@ interface ProductLine {
   productName: string;
   specification?: string;
   quantity: string;
+  make?: string;
   itemNumber?: string;
   etdPo?: string;
   supplierName?: string;
@@ -157,6 +158,14 @@ CRITICAL: Only extract data from emails that are legitimate pharmaceutical/chemi
 
 IMPORTANT: Many inquiries contain MULTIPLE PRODUCTS. You must extract ALL products as an array.
 
+**CRITICAL: EACH TABLE ROW = ONE PRODUCT ENTRY**
+- If you see the SAME product name with DIFFERENT quantities (e.g., Sodium Diclofenac 1000kg, 2000kg, 5000kg), create SEPARATE product objects for EACH quantity
+- DO NOT combine multiple quantities into one product
+- Each quantity variation is a distinct inquiry that requires separate quotation
+- Example: "Sodium Diclofenac" appearing with [1000 kg, 2000 kg, 5000 kg] = 3 SEPARATE products in the array
+- Even if product name repeats, treat each row as a unique product entry
+- Customer wants pricing for each quantity tier separately
+
 **LANGUAGE DETECTION & TRANSLATION:**
 - Detect if email is in Indonesian (Bahasa Indonesia) or other languages
 - If Indonesian: Translate ALL content to English before processing
@@ -196,15 +205,29 @@ Extract information for VALID inquiries:
 - SATUAN / Unit
 - TGL DATANG / Delivery Date (PER PRODUCT)
 
+**CRITICAL: ONE ROW = ONE PRODUCT (EVEN IF NAME REPEATS):**
+- Parse table ROW BY ROW
+- Each row becomes ONE product object in the array
+- If product name is blank in a row but quantity exists, use the product name from above (merged cells)
+- Example table:
+  | Product Name         | Quantity  |
+  | Sodium Diclofenac   | 1000 kg   | ← Product 1
+  |                     | 2000 kg   | ← Product 2 (same name, different qty)
+  |                     | 5000 kg   | ← Product 3 (same name, different qty)
+  | Ranitidine HCI      | 300 kg    | ← Product 4
+
+  Result: 4 separate products in the array, NOT 1 product with combined quantities
+
 **CRITICAL: Extract PER-PRODUCT data:**
-For EACH product extract:
+For EACH ROW extract:
 1. Product name (e.g., "ESCITALOPRAM OXALATE", "ATRACURIUM BESYLATE (EXPORT)")
 2. Specification/Grade (e.g., "BP, Powder", "USP", "EP")
 3. Quantity with units (e.g., "25 KG", "6 KG")
-4. **Supplier/Origin/Manufacturer for THIS product** (from ORIGIN column)
-5. **Delivery date for THIS product** (from TGL DATANG / delivery date column)
-6. Item number if in table (e.g., "153109", "117535")
-7. Delivery terms if mentioned (FOB, CIF, EXW, etc.)
+4. Make/Manufacturer preference if mentioned (e.g., "ANY MAKE", "SPECIFIC BRAND")
+5. **Supplier/Origin/Manufacturer for THIS product** (from ORIGIN column)
+6. **Delivery date for THIS product** (from TGL DATANG / delivery date column)
+7. Item number if in table (e.g., "153109", "117535")
+8. Delivery terms if mentioned (FOB, CIF, EXW, etc.)
 
 General inquiry info:
 8. Company name from signature or header
@@ -232,6 +255,7 @@ Return a JSON object:
       "productName": string,
       "specification": string | null,
       "quantity": string,
+      "make": string | null (e.g., "ANY MAKE", "SPECIFIC BRAND"),
       "supplierName": string | null (extract from ORIGIN column for THIS product),
       "supplierCountry": string | null (extract country from origin),
       "deliveryDate": "YYYY-MM-DD" | null (from TGL DATANG column for THIS product),
@@ -373,6 +397,7 @@ Respond with a JSON object containing the extracted information.`;
         productName: p.productName || p.product_name || '',
         specification: p.specification || p.spec || p.grade || null,
         quantity: p.quantity || '',
+        make: p.make || p.manufacturer || null,
         supplierName: p.supplierName || p.supplier_name || p.supplier || p.origin || null,
         supplierCountry: p.supplierCountry || p.supplier_country || p.country || null,
         deliveryDate: p.deliveryDate || p.delivery_date || p.tglDatang || p.tgl_datang || null,

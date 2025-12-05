@@ -200,7 +200,8 @@ export function CRMCommandCenter() {
       if (inquiryError) throw inquiryError;
 
       // Create inquiry items if multi-product
-      if (formData.isMultiProduct && formData.products && formData.products.length > 1) {
+      // IMPORTANT: Create items even if single product to support future quantity variations
+      if (formData.isMultiProduct && formData.products && formData.products.length > 0) {
         const baseInquiryNumber = inquiry.inquiry_number;
         const inquiryItems = formData.products.map((product, index) => ({
           parent_inquiry_id: inquiry.id,
@@ -208,9 +209,25 @@ export function CRMCommandCenter() {
           product_name: product.productName,
           specification: product.specification || null,
           quantity: product.quantity,
+          make: product.make || null,
+          supplier_name: product.supplierName || null,
+          supplier_country: product.supplierCountry || null,
+          delivery_date: product.deliveryDate || null,
+          delivery_terms: product.deliveryTerms || null,
+          aceerp_no: null,
+          purchase_price: null,
+          purchase_price_currency: 'USD',
+          offered_price: null,
+          offered_price_currency: 'USD',
+          our_side_status: [],
+          price_sent_at: null,
+          coa_sent_at: null,
+          sample_sent_at: null,
+          agency_letter_sent_at: null,
           status: 'open',
           pipeline_stage: 'new',
           document_sent: false,
+          remarks: null,
           notes: null,
         }));
 

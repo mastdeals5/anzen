@@ -21,10 +21,26 @@ interface InquiryItem {
   product_name: string;
   specification?: string | null;
   quantity: string;
+  make?: string | null;
+  supplier_name?: string | null;
+  supplier_country?: string | null;
+  delivery_date?: string | null;
+  delivery_terms?: string | null;
+  aceerp_no?: string | null;
+  purchase_price?: number | null;
+  purchase_price_currency?: string;
+  offered_price?: number | null;
+  offered_price_currency?: string;
+  our_side_status?: string[];
+  price_sent_at?: string | null;
+  coa_sent_at?: string | null;
+  sample_sent_at?: string | null;
+  agency_letter_sent_at?: string | null;
   status: string;
   pipeline_stage: string;
   document_sent: boolean;
   document_sent_at?: string | null;
+  remarks?: string | null;
   notes?: string | null;
 }
 

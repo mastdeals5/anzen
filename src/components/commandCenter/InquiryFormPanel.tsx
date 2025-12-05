@@ -330,6 +330,7 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
                         <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Product Name</th>
                         <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Specification</th>
                         <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Quantity</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Make</th>
                         <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Supplier / Origin</th>
                         <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Delivery Date</th>
                         <th className="px-3 py-2 text-left text-xs font-semibold text-blue-900">Delivery Terms</th>
@@ -347,6 +348,9 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
                           </td>
                           <td className="px-3 py-2 text-xs text-gray-700">
                             {product.quantity || '-'}
+                          </td>
+                          <td className="px-3 py-2 text-xs text-gray-700">
+                            {product.make || product.manufacturer || '-'}
                           </td>
                           <td className="px-3 py-2 text-xs text-gray-700">
                             {product.supplierName || product.supplier_name || product.origin || '-'}
