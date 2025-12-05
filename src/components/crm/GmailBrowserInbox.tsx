@@ -58,7 +58,7 @@ interface EmailListItem {
 type FolderType = 'INBOX' | 'SENT' | 'STARRED' | 'ALL' | 'TRASH' | 'DRAFT';
 
 export function GmailBrowserInbox() {
-  const { navigateTo } = useNavigation();
+  const { setCurrentPage } = useNavigation();
   const [connection, setConnection] = useState<GmailConnection | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingEmails, setLoadingEmails] = useState(false);
@@ -662,7 +662,7 @@ export function GmailBrowserInbox() {
 
       sessionStorage.setItem('pendingEmailForInquiry', JSON.stringify(emailData));
 
-      navigateTo('command-center');
+      setCurrentPage('command-center');
     } catch (error) {
       console.error('Error preparing inquiry:', error);
       alert('Failed to prepare inquiry. Please try again.');

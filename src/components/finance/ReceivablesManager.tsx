@@ -37,7 +37,7 @@ interface BankAccount {
 }
 
 export function ReceivablesManager({ canManage }: { canManage: boolean }) {
-  const { navigateTo } = useNavigation();
+  const { setCurrentPage } = useNavigation();
   const [view, setView] = useState<'invoices' | 'payments'>('invoices');
   const [invoices, setInvoices] = useState<SalesInvoice[]>([]);
   const [payments, setPayments] = useState<CustomerPayment[]>([]);
@@ -230,7 +230,7 @@ export function ReceivablesManager({ canManage }: { canManage: boolean }) {
       label: 'Invoice #',
       render: (inv: SalesInvoice) => (
         <button
-          onClick={() => navigateTo('sales')}
+          onClick={() => setCurrentPage('sales')}
           className="text-blue-600 hover:underline font-medium"
         >
           {inv.invoice_number}
