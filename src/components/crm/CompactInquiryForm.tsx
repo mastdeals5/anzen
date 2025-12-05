@@ -416,12 +416,13 @@ export function CompactInquiryForm({ onSubmit, onCancel, initialData, isEditing 
               Email
             </label>
             <input
-              type="email"
+              type="text"
               value={formData.contact_email}
               onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
               className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="email@example.com"
+              placeholder="email@example.com or multiple: email1@example.com, email2@example.com"
             />
+            <p className="text-xs text-gray-500 mt-0.5">Use comma (,) or semicolon (;) to separate multiple emails</p>
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -728,12 +729,13 @@ export function CompactInquiryForm({ onSubmit, onCancel, initialData, isEditing 
                   Email
                 </label>
                 <input
-                  type="email"
+                  type="text"
                   value={newCustomer.email}
                   onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
                   className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="email@example.com"
+                  placeholder="email@example.com or multiple: email1@example.com, email2@example.com"
                 />
+                <p className="text-xs text-gray-500 mt-0.5">Comma (,) or semicolon (;) separated</p>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>

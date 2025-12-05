@@ -73,14 +73,22 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
         contactEmail = contactEmail[0]?.email || contactEmail[0] || '';
       }
 
-      // Strip HTML tags if present
+      // Strip HTML tags if present and extract all emails
       if (typeof contactEmail === 'string') {
         // Remove HTML tags
         contactEmail = contactEmail.replace(/<[^>]*>/g, '');
-        // Extract email from text if it contains email-like pattern
-        const emailMatch = contactEmail.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
-        if (emailMatch) {
-          contactEmail = emailMatch[1];
+        // Extract all email addresses from text
+        const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+        const foundEmails: string[] = [];
+        let emailMatch;
+        while ((emailMatch = emailRegex.exec(contactEmail)) !== null) {
+          if (!foundEmails.includes(emailMatch[1])) {
+            foundEmails.push(emailMatch[1]);
+          }
+        }
+        // Join all found emails with comma separator
+        if (foundEmails.length > 0) {
+          contactEmail = foundEmails.join(', ');
         }
       }
 
