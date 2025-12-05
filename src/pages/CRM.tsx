@@ -107,8 +107,11 @@ export function CRM() {
       if (!user) throw new Error('Not authenticated');
 
       if (editingInquiry) {
+        // Extract products and is_multi_product from formData before update
+        const { products, is_multi_product, ...restFormData } = formData;
+
         const updateData: any = {
-          ...formData,
+          ...restFormData,
           specification: formData.specification || null,
           purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
           offered_price: formData.offered_price ? parseFloat(formData.offered_price) : null,
@@ -121,21 +124,66 @@ export function CRM() {
 
         if (error) throw error;
       } else {
+        // Extract products and is_multi_product from formData before insert
+        const { products, is_multi_product, ...restFormData } = formData;
+
         const insertData: any = {
-          ...formData,
+          ...restFormData,
           specification: formData.specification || null,
           inquiry_date: new Date().toISOString().split('T')[0],
           assigned_to: user.id,
           created_by: user.id,
           purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
           offered_price: formData.offered_price ? parseFloat(formData.offered_price) : null,
+          is_multi_product: is_multi_product || false,
+          has_items: is_multi_product || false,
         };
 
-        const { error } = await supabase
+        const { data: inquiry, error } = await supabase
           .from('crm_inquiries')
-          .insert([insertData]);
+          .insert([insertData])
+          .select()
+          .single();
 
         if (error) throw error;
+
+        // Create inquiry items if multi-product
+        if (is_multi_product && products && products.length > 0 && inquiry) {
+          const baseInquiryNumber = inquiry.inquiry_number;
+          const inquiryItems = products.map((product: any, index: number) => ({
+            parent_inquiry_id: inquiry.id,
+            inquiry_number: `${baseInquiryNumber}.${index + 1}`,
+            product_name: product.productName || product.product_name,
+            specification: product.specification || null,
+            quantity: product.quantity,
+            make: product.make || null,
+            supplier_name: product.supplierName || product.supplier_name || null,
+            supplier_country: product.supplierCountry || product.supplier_country || null,
+            delivery_date: product.deliveryDate || product.delivery_date || null,
+            delivery_terms: product.deliveryTerms || product.delivery_terms || null,
+            aceerp_no: null,
+            purchase_price: null,
+            purchase_price_currency: 'USD',
+            offered_price: null,
+            offered_price_currency: 'USD',
+            our_side_status: [],
+            price_sent_at: null,
+            coa_sent_at: null,
+            sample_sent_at: null,
+            agency_letter_sent_at: null,
+            status: 'open',
+            pipeline_stage: 'new',
+            document_sent: false,
+            remarks: null,
+            notes: null,
+          }));
+
+          const { error: itemsError } = await supabase
+            .from('crm_inquiry_items')
+            .insert(inquiryItems);
+
+          if (itemsError) throw itemsError;
+        }
       }
 
       setModalOpen(false);
