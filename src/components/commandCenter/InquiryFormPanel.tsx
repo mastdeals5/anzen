@@ -325,14 +325,15 @@ export function InquiryFormPanel({ email, parsedData, onSave, saving }: InquiryF
                             {product.quantity || '-'}
                           </td>
                           <td className="px-3 py-2 text-xs text-gray-700">
-                            {parsedData.supplierName || '-'}
-                            {parsedData.supplierCountry && ` (${parsedData.supplierCountry})`}
+                            {product.supplierName || product.supplier_name || product.origin || '-'}
+                            {(product.supplierCountry || product.supplier_country) &&
+                              ` (${product.supplierCountry || product.supplier_country})`}
                           </td>
                           <td className="px-3 py-2 text-xs text-gray-700">
-                            {parsedData.deliveryDateExpected || '-'}
+                            {product.deliveryDate || product.delivery_date || product.tglDatang || product.tgl_datang || '-'}
                           </td>
                           <td className="px-3 py-2 text-xs text-gray-700">
-                            -
+                            {product.deliveryTerms || product.delivery_terms || '-'}
                           </td>
                         </tr>
                       ))}
