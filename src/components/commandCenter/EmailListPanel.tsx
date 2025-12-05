@@ -120,23 +120,28 @@ export function EmailListPanel({ onEmailSelect, selectedEmailId }: EmailListPane
             throw new Error('Not authenticated');
           }
 
-          // Check if this email was already processed
-          const { data: existingInquiry } = await supabase
-            .from('inquiries')
-            .select('id, inquiry_number, product_name')
-            .eq('mail_subject', emailData.subject)
-            .maybeSingle();
+          // Check if this email was already processed (optional, non-blocking)
+          try {
+            const { data: existingInquiry } = await supabase
+              .from('inquiries')
+              .select('id, inquiry_number, product_name')
+              .eq('mail_subject', emailData.subject)
+              .maybeSingle();
 
-          if (existingInquiry) {
-            const shouldReprocess = confirm(
-              `This email has already been processed as Inquiry #${existingInquiry.inquiry_number} (${existingInquiry.product_name}).\n\nDo you want to reprocess it?`
-            );
+            if (existingInquiry) {
+              const shouldReprocess = confirm(
+                `This email has already been processed as Inquiry #${existingInquiry.inquiry_number} (${existingInquiry.product_name}).\n\nDo you want to reprocess it?`
+              );
 
-            if (!shouldReprocess) {
-              console.log('[EmailListPanel] User declined to reprocess existing inquiry');
-              return;
+              if (!shouldReprocess) {
+                console.log('[EmailListPanel] User declined to reprocess existing inquiry');
+                sessionStorage.removeItem('pendingEmailForCommandCenter');
+                return;
+              }
+              console.log('[EmailListPanel] User confirmed reprocessing existing inquiry');
             }
-            console.log('[EmailListPanel] User confirmed reprocessing existing inquiry');
+          } catch (error) {
+            console.warn('[EmailListPanel] Could not check for duplicates (continuing anyway):', error);
           }
 
           console.log('[EmailListPanel] Calling parse-pharma-email edge function');
