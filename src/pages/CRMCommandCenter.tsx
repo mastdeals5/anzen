@@ -69,6 +69,7 @@ function parseDeliveryDate(dateStr: string | undefined | null): string | null {
 }
 
 export function CRMCommandCenter() {
+  console.log('[CRMCommandCenter] Component loaded - Dec 7 2025 v1.2'); // Version check
   const { profile } = useAuth();
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [parsedData, setParsedData] = useState<ParsedEmailData | null>(null);
@@ -95,12 +96,20 @@ export function CRMCommandCenter() {
       let customerId = null;
       // Use only the first email address for lookup if multiple emails provided
       const primaryEmail = formData.contactEmail.split(/[,;]/)[0].trim();
-      const { data: existingCustomers } = await supabase
+
+      console.log('[CRMCommandCenter] Looking up customer with primaryEmail:', primaryEmail);
+
+      const { data: existingCustomers, error: lookupError } = await supabase
         .from('crm_contacts')
         .select('id, company_name, email, contact_person, phone, address')
         .or(`email.eq.${primaryEmail},company_name.ilike.${formData.companyName}`)
         .limit(1)
         .maybeSingle();
+
+      if (lookupError) {
+        console.error('[CRMCommandCenter] Customer lookup error:', lookupError);
+        throw lookupError;
+      }
 
       if (existingCustomers) {
         customerId = existingCustomers.id;
@@ -207,12 +216,17 @@ export function CRMCommandCenter() {
           has_items: false,
         }));
 
+        console.log('[CRMCommandCenter] Inserting multi-product inquiries:', inquiriesToInsert.length, 'items');
+
         const { data: inquiries, error: inquiryError } = await supabase
           .from('crm_inquiries')
           .insert(inquiriesToInsert)
           .select();
 
-        if (inquiryError) throw inquiryError;
+        if (inquiryError) {
+          console.error('[CRMCommandCenter] Multi-product insert error:', inquiryError);
+          throw inquiryError;
+        }
 
         // Update inquiry numbers to add .1, .2, .3 suffixes
         if (inquiries && inquiries.length > 0) {
@@ -229,6 +243,8 @@ export function CRMCommandCenter() {
         }
       } else {
         // Single product inquiry
+        console.log('[CRMCommandCenter] Inserting single product inquiry');
+
         const { data: singleInquiry, error: inquiryError } = await supabase
           .from('crm_inquiries')
           .insert([{
@@ -239,7 +255,10 @@ export function CRMCommandCenter() {
           .select()
           .single();
 
-        if (inquiryError) throw inquiryError;
+        if (inquiryError) {
+          console.error('[CRMCommandCenter] Single product insert error:', inquiryError);
+          throw inquiryError;
+        }
         inquiry = singleInquiry;
       }
 
@@ -324,11 +343,13 @@ export function CRMCommandCenter() {
 
       alert(successMsg);
     } catch (error: any) {
-      console.error('Error creating inquiry:', error);
+      console.error('[CRMCommandCenter] Error creating inquiry:', error);
+      console.error('[CRMCommandCenter] Error details:', JSON.stringify(error, null, 2));
       if (error.message?.includes('duplicate key')) {
         alert('This inquiry number already exists. Please use a different number.');
       } else {
-        alert('Failed to create inquiry. Please try again.');
+        const errorMsg = error.message || error.details || error.hint || 'Unknown error';
+        alert(`Failed to create inquiry: ${errorMsg}\n\nCheck console for details.`);
       }
     } finally {
       setSaving(false);
