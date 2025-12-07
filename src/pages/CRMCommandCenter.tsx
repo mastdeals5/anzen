@@ -147,9 +147,18 @@ export function CRMCommandCenter() {
           .select()
           .single();
 
-        if (!customerError && newCustomer) {
+        if (customerError) {
+          console.error('[CRMCommandCenter] Customer creation error:', customerError);
+          throw new Error(`Failed to create customer: ${customerError.message}`);
+        }
+
+        if (newCustomer) {
           customerId = newCustomer.id;
         }
+      }
+
+      if (!customerId) {
+        throw new Error('Failed to get or create customer ID');
       }
 
       const inquiryData = {
