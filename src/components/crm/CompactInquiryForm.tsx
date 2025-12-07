@@ -207,7 +207,6 @@ export function CompactInquiryForm({ onSubmit, onCancel, initialData, isEditing 
           productName: '',
           specification: '',
           quantity: '',
-          make: '',
           supplierName: '',
           supplierCountry: '',
           deliveryDate: '',
@@ -249,7 +248,6 @@ export function CompactInquiryForm({ onSubmit, onCancel, initialData, isEditing 
                       productName: '',
                       specification: '',
                       quantity: '',
-                      make: '',
                       supplierName: '',
                       supplierCountry: '',
                       deliveryDate: '',
@@ -267,265 +265,85 @@ export function CompactInquiryForm({ onSubmit, onCancel, initialData, isEditing 
 
         {/* Row: Product Name | Specification */}
         {!formData.is_multi_product && (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Product Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.product_name}
-                  onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
-                  className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter product name"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Specification
-                </label>
-                <input
-                  type="text"
-                  value={formData.specification}
-                  onChange={(e) => setFormData({ ...formData, specification: e.target.value })}
-                  className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="BP / USP / EP"
-                />
-              </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Product Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.product_name}
+                onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
+                className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter product name"
+                required
+              />
             </div>
-
-            {/* Row: Quantity | Priority | Inquiry Source */}
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Quantity <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                  className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., 500 KG"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Priority <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.priority}
-                  onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                  className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Inquiry Source
-                </label>
-                <select
-                  value={formData.inquiry_source}
-                  onChange={(e) => setFormData({ ...formData, inquiry_source: e.target.value })}
-                  className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="email">Email</option>
-                  <option value="phone">Phone</option>
-                  <option value="whatsapp">WhatsApp</option>
-                  <option value="website">Website</option>
-                  <option value="referral">Referral</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Specification
+              </label>
+              <input
+                type="text"
+                value={formData.specification}
+                onChange={(e) => setFormData({ ...formData, specification: e.target.value })}
+                className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="BP / USP / EP"
+              />
             </div>
-          </>
+          </div>
         )}
 
-        {/* Show Priority and Inquiry Source for multi-product */}
-        {formData.is_multi_product && (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Priority <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.priority}
-                  onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                  className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Inquiry Source
-                </label>
-                <select
-                  value={formData.inquiry_source}
-                  onChange={(e) => setFormData({ ...formData, inquiry_source: e.target.value })}
-                  className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="email">Email</option>
-                  <option value="phone">Phone</option>
-                  <option value="whatsapp">WhatsApp</option>
-                  <option value="website">Website</option>
-                  <option value="referral">Referral</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
+        {/* Row: Quantity | Priority | Inquiry Source */}
+        <div className="grid grid-cols-3 gap-3">
+          {!formData.is_multi_product && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Quantity <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.quantity}
+                onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 500 KG"
+                required
+              />
             </div>
-
-            {/* Multi-Product List */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-gray-700">
-                  Products <span className="text-red-500">*</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={addProduct}
-                  className="flex items-center gap-1 px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Product
-                </button>
-              </div>
-
-              {formData.products.map((product: any, index: number) => (
-                <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-gray-600">Product #{index + 1}</span>
-                    {formData.products.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeProduct(index)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Product Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={product.productName || ''}
-                        onChange={(e) => updateProduct(index, 'productName', e.target.value)}
-                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                        placeholder="Product name"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Specification
-                      </label>
-                      <input
-                        type="text"
-                        value={product.specification || ''}
-                        onChange={(e) => updateProduct(index, 'specification', e.target.value)}
-                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                        placeholder="BP/USP/EP"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Quantity <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={product.quantity || ''}
-                        onChange={(e) => updateProduct(index, 'quantity', e.target.value)}
-                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                        placeholder="500 KG"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Make
-                      </label>
-                      <input
-                        type="text"
-                        value={product.make || ''}
-                        onChange={(e) => updateProduct(index, 'make', e.target.value)}
-                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                        placeholder="Brand/Make"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Delivery Date
-                      </label>
-                      <input
-                        type="date"
-                        value={product.deliveryDate || ''}
-                        onChange={(e) => updateProduct(index, 'deliveryDate', e.target.value)}
-                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Supplier Name
-                      </label>
-                      <input
-                        type="text"
-                        value={product.supplierName || ''}
-                        onChange={(e) => updateProduct(index, 'supplierName', e.target.value)}
-                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                        placeholder="Supplier"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Country
-                      </label>
-                      <input
-                        type="text"
-                        value={product.supplierCountry || ''}
-                        onChange={(e) => updateProduct(index, 'supplierCountry', e.target.value)}
-                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                        placeholder="Country"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Delivery Terms
-                      </label>
-                      <input
-                        type="text"
-                        value={product.deliveryTerms || ''}
-                        onChange={(e) => updateProduct(index, 'deliveryTerms', e.target.value)}
-                        className="w-full h-8 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                        placeholder="FOB/CIF"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
+          )}
+          <div className={!formData.is_multi_product ? '' : 'col-span-1'}>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Priority <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={formData.priority}
+              onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+              className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+          <div className={!formData.is_multi_product ? '' : 'col-span-2'}>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Inquiry Source
+            </label>
+            <select
+              value={formData.inquiry_source}
+              onChange={(e) => setFormData({ ...formData, inquiry_source: e.target.value })}
+              className="w-full h-9 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="email">Email</option>
+              <option value="phone">Phone</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="website">Website</option>
+              <option value="referral">Referral</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
 
         {/* Row: Supplier Name | Country of Origin | Customer Dropdown */}
         <div className="grid grid-cols-3 gap-3">
