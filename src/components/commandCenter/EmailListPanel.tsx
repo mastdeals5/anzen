@@ -124,7 +124,7 @@ export function EmailListPanel({ onEmailSelect, selectedEmailId }: EmailListPane
           // Check if this email was already processed (optional, non-blocking)
           try {
             const { data: existingInquiry } = await supabase
-              .from('inquiries')
+              .from('crm_inquiries')
               .select('id, inquiry_number, product_name')
               .eq('mail_subject', emailData.subject)
               .maybeSingle();

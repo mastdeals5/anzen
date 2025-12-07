@@ -93,10 +93,12 @@ export function CRMCommandCenter() {
 
       // Check if customer exists by email or company name
       let customerId = null;
+      // Use only the first email address for lookup if multiple emails provided
+      const primaryEmail = formData.contactEmail.split(/[,;]/)[0].trim();
       const { data: existingCustomers } = await supabase
         .from('crm_contacts')
         .select('id, company_name, email, contact_person, phone, address')
-        .or(`email.eq.${formData.contactEmail},company_name.ilike.${formData.companyName}`)
+        .or(`email.eq.${primaryEmail},company_name.ilike.${formData.companyName}`)
         .limit(1)
         .maybeSingle();
 
