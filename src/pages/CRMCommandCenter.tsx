@@ -195,7 +195,7 @@ export function CRMCommandCenter() {
         assigned_to: user.id,
         created_by: user.id,
         source: 'email',
-        source_email_id: selectedEmail.id,
+        source_email_id: selectedEmail.id.startsWith('gmail-') ? null : selectedEmail.id,
       };
 
       // If multi-product, create N separate inquiries in crm_inquiries with .1, .2, .3 suffixes
