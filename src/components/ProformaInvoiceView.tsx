@@ -223,6 +223,7 @@ export function ProformaInvoiceView({ salesOrder, items, onClose }: ProformaInvo
   };
 
   const customer = salesOrder.customers;
+  const hasAnyDiscount = items.some(item => (item.discount_amount || 0) > 0);
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-900 bg-opacity-75 print:static print:bg-white print:overflow-visible">
@@ -354,8 +355,10 @@ export function ProformaInvoiceView({ salesOrder, items, onClose }: ProformaInvo
                     <th className="border-r border-black p-1.5 text-left font-bold print:p-1">{language === 'id' ? 'Product Name' : 'Product Name'}</th>
                     <th className="border-r border-black p-1.5 text-center font-bold print:p-1">{language === 'id' ? 'Total Qty' : 'Total Qty'}</th>
                     <th className="border-r border-black p-1.5 text-center font-bold print:p-1">UOM</th>
-                    <th className="border-r border-black p-1.5 text-right font-bold print:p-1">{language === 'id' ? `Unit Price (${currency})` : `Unit Price (${currency})`}</th>
-                    <th className="border-r border-black p-1.5 text-right font-bold print:p-1">{language === 'id' ? 'Discount' : 'Discount'}</th>
+                    <th className={`border-r border-black p-1.5 text-right font-bold print:p-1 ${!hasAnyDiscount ? '' : ''}`}>{language === 'id' ? `Unit Price (${currency})` : `Unit Price (${currency})`}</th>
+                    {hasAnyDiscount && (
+                      <th className="border-r border-black p-1.5 text-right font-bold print:p-1">{language === 'id' ? 'Discount' : 'Discount'}</th>
+                    )}
                     <th className="p-1.5 text-right font-bold print:p-1">{language === 'id' ? `Sub Total (${currency})` : `Sub Total (${currency})`}</th>
                   </tr>
                 </thead>
@@ -372,8 +375,10 @@ export function ProformaInvoiceView({ salesOrder, items, onClose }: ProformaInvo
                         <td className="border-r border-black p-1.5 print:p-1">{item.products?.product_name || 'Unknown Product'}</td>
                         <td className="border-r border-black p-1.5 text-center print:p-1">{quantity.toLocaleString()}</td>
                         <td className="border-r border-black p-1.5 text-center print:p-1">{item.products?.unit || 'Kg'}</td>
-                        <td className="border-r border-black p-1.5 text-right print:p-1">{formatCurrency(unitPrice)}</td>
-                        <td className="border-r border-black p-1.5 text-right print:p-1">{formatCurrency(discountAmount)}</td>
+                        <td className={`border-r border-black p-1.5 text-right print:p-1 ${!hasAnyDiscount ? '' : ''}`}>{formatCurrency(unitPrice)}</td>
+                        {hasAnyDiscount && (
+                          <td className="border-r border-black p-1.5 text-right print:p-1">{formatCurrency(discountAmount)}</td>
+                        )}
                         <td className="p-1.5 text-right print:p-1">{formatCurrency(itemSubtotal)}</td>
                       </tr>
                     );
@@ -386,7 +391,9 @@ export function ProformaInvoiceView({ salesOrder, items, onClose }: ProformaInvo
                       <td className="border-r border-black p-1.5 print:p-1">&nbsp;</td>
                       <td className="border-r border-black p-1.5 print:p-1">&nbsp;</td>
                       <td className="border-r border-black p-1.5 print:p-1">&nbsp;</td>
-                      <td className="border-r border-black p-1.5 print:p-1">&nbsp;</td>
+                      {hasAnyDiscount && (
+                        <td className="border-r border-black p-1.5 print:p-1">&nbsp;</td>
+                      )}
                       <td className="p-1.5 print:p-1">&nbsp;</td>
                     </tr>
                   ))}

@@ -104,7 +104,13 @@ export default function SalesOrders() {
           *,
           customers (
             id,
-            company_name
+            company_name,
+            address,
+            city,
+            phone,
+            npwp,
+            pharmacy_license,
+            gst_vat_type
           ),
           sales_order_items (
             id,
@@ -122,7 +128,8 @@ export default function SalesOrders() {
             products (
               id,
               product_name,
-              product_code
+              product_code,
+              unit
             )
           )
         `);
