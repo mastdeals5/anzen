@@ -3,9 +3,10 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Layout } from '../components/Layout';
-import { FileText, Plus, Search, Filter, Eye, Edit, Trash2, XCircle, FileCheck, CheckCircle, Paperclip, Download, ExternalLink } from 'lucide-react';
+import { FileText, Plus, Search, Filter, Eye, Edit, Trash2, XCircle, FileCheck, CheckCircle, Paperclip, Download, ExternalLink, FileOutput } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import SalesOrderForm from '../components/SalesOrderForm';
+import { ProformaInvoiceView } from '../components/ProformaInvoiceView';
 
 interface Customer {
   id: string;
@@ -82,6 +83,8 @@ export default function SalesOrders() {
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [archiveReason, setArchiveReason] = useState('');
   const [orderToArchive, setOrderToArchive] = useState<string | null>(null);
+  const [showProformaModal, setShowProformaModal] = useState(false);
+  const [proformaOrder, setProformaOrder] = useState<SalesOrder | null>(null);
 
   useEffect(() => {
     fetchSalesOrders();
@@ -634,6 +637,16 @@ export default function SalesOrders() {
                         >
                           <Eye className="w-4 h-4" />
                         </button>
+                        <button
+                          onClick={() => {
+                            setProformaOrder(order);
+                            setShowProformaModal(true);
+                          }}
+                          className="text-purple-600 hover:text-purple-800"
+                          title="View Proforma Invoice"
+                        >
+                          <FileOutput className="w-4 h-4" />
+                        </button>
                         {!['delivered', 'closed', 'cancelled', 'partially_delivered', 'pending_delivery'].includes(order.status) && (
                           <button
                             onClick={() => handleEditOrder(order)}
@@ -948,6 +961,17 @@ export default function SalesOrders() {
             </div>
           </div>
         </Modal>
+      )}
+
+      {showProformaModal && proformaOrder && (
+        <ProformaInvoiceView
+          salesOrder={proformaOrder}
+          items={proformaOrder.sales_order_items || []}
+          onClose={() => {
+            setShowProformaModal(false);
+            setProformaOrder(null);
+          }}
+        />
       )}
       </div>
     </Layout>
